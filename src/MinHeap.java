@@ -27,6 +27,7 @@ public final class MinHeap<T extends Comparable<? super T>> implements MinHeapIn
 	 */
 	public MinHeap() {
 		this(DEFAULT_CAPACITY);
+		integrityOK = true;
 	}
 	
 	/**
@@ -42,7 +43,6 @@ public final class MinHeap<T extends Comparable<? super T>> implements MinHeapIn
 		T[] tempHeap =(T[]) new Comparable[initialCapacity + 1];
 		heap = tempHeap;
 		lastIndex = 0;
-		integrityOK = true;
 	}
 	
 	/**
@@ -50,6 +50,11 @@ public final class MinHeap<T extends Comparable<? super T>> implements MinHeapIn
 	 * @param entries The array of values to be input into our heap;
 	 */
 	public MinHeap(T[] entries) {
+		
+		/*
+		 In calling it's length-param overload, it is effectively calling ensureCapacity(),
+		 so unnecessary to include again here;
+		*/
 		this(entries.length);
 		lastIndex = entries.length;
 		// Copy input array into our heap implementation;
@@ -60,6 +65,7 @@ public final class MinHeap<T extends Comparable<? super T>> implements MinHeapIn
 		for (int rootIndex = lastIndex / 2; rootIndex > 0; rootIndex--) {
 			reheap(rootIndex);
 		}
+		integrityOK = true;
 	}
 	
 	/**
@@ -83,7 +89,6 @@ public final class MinHeap<T extends Comparable<? super T>> implements MinHeapIn
 	}
 	
 	/**
-	 *
 	 * @return The number of elements in our MinHeap
 	 */
 	public int getSize() {
@@ -119,7 +124,9 @@ public final class MinHeap<T extends Comparable<? super T>> implements MinHeapIn
 		checkIntegrity();
 		T root = null;
 		if(!isEmpty()) {
+			// Initialize root to the value of the overall root of the structure, the minimum value;
 			root = heap[1];
+			// Break "heap" property by replacing root with the last element (biggest);
 			heap[1] = heap[lastIndex];
 			// Decrement the number of elements in heap;
 			lastIndex--;
@@ -144,6 +151,8 @@ public final class MinHeap<T extends Comparable<? super T>> implements MinHeapIn
 	
 	/**
 	 * Resize our heap's underlying array if an add/remove op puts it in an illegal state;
+	 * Pre: an array which may or may not have enough room to add an element;
+	 * Post: an array which definitely does have room to add an element;
 	 */
 	private void ensureCapacity() {
 		int numberOfEntries = lastIndex;
@@ -155,7 +164,9 @@ public final class MinHeap<T extends Comparable<? super T>> implements MinHeapIn
 		}
 	}
 	
-	// Throw exception if object is corrupt;
+	/**
+	 * Throw exception if object is corrupt;
+	 */
 	private void checkIntegrity() {
 		if (!integrityOK) {
 			throw new SecurityException("MinHeap object is corrupt.");
@@ -163,7 +174,6 @@ public final class MinHeap<T extends Comparable<? super T>> implements MinHeapIn
 	}
 	
 	/**
-	 *
 	 * @param capacity The capacity of the underlying array structure after an op such as add/remove performed;
 	 */
 	private void checkCapacity(int capacity){
@@ -184,15 +194,21 @@ public final class MinHeap<T extends Comparable<? super T>> implements MinHeapIn
 		T orphan = heap[rootIndex];
 		int leftChildIndex = 2 * rootIndex;
 		
+		// While not done and not at the end:
 		while(!done && (leftChildIndex <= lastIndex)) {
 			// Assume left child has smaller value;
 			int smallerChildIndex = leftChildIndex;
+			// Establish relative position of right child node;
 			int rightChildIndex = leftChildIndex + 1;
 			
+			/*
+			 If not at end and rightChild is smaller than element at smallerChildIndex
+			 reassign smallerChildIndex;
+			*/
 			if ((rightChildIndex <= lastIndex) && (heap[rightChildIndex].compareTo(heap[smallerChildIndex]) < 0)) {
 				smallerChildIndex = rightChildIndex;
 			}
-			if(orphan.compareTo(heap[smallerChildIndex]) < 0) {
+			if(orphan.compareTo(heap[smallerChildIndex]) > 0) {
 				heap[rootIndex] = heap[smallerChildIndex];
 				rootIndex = smallerChildIndex;
 				leftChildIndex = 2 * rootIndex;
